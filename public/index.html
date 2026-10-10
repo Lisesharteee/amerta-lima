@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AMERTA LIMA — Kuis Bhinneka Tunggal Ika</title>
+<style>
+/* ============ TOKEN DESAIN (gaya shadcn: warna semantik, tanpa warna mentah) ============ */
+:root{
+  --background:#f6f8fb;--foreground:#0f172a;--card:#ffffff;--muted:#64748b;
+  --border:#e2e8f0;--primary:#0f172a;--primary-foreground:#fff;--destructive:#dc2626;
+  --success:#16a34a;--warning:#d97706;--radius:14px;
+  --t-ares:#dc2626;--t-phobos:#9333ea;--t-hades:#0d9488;--t-artemis:#d97706;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:ui-sans-serif,system-ui,'Segoe UI',Roboto,Arial,sans-serif;background:var(--background);color:var(--foreground);overflow:hidden}
+button{font:inherit;cursor:pointer;border:none;background:none}
+input,textarea{font:inherit}
+.hide{display:none!important}
+.t-ares{--tc:var(--t-ares)}.t-phobos{--tc:var(--t-phobos)}.t-hades{--tc:var(--t-hades)}.t-artemis{--tc:var(--t-artemis)}
+
+/* ============ KOMPONEN (kartu, tombol, chip) ============ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:10px 18px;font-weight:600;font-size:14px;border:1px solid var(--border);background:var(--card);color:var(--foreground);transition:.15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.12)}
+.btn-primary{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-danger{background:var(--destructive);color:#fff;border-color:var(--destructive)}
+.btn-ghost{background:transparent;box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.input{width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);outline:none}
+.input:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.25)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--card)}
+.grow{flex:1}.center{display:flex;align-items:center;justify-content:center}
+.col{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:12px}
+
+/* ============ LATAR LANGIT & LAUT ============ */
+.scene{position:relative;width:100%;height:100%;overflow:hidden;
+  background:linear-gradient(#7ec8f7 0%,#aee0fb 45%,#d9f2ff 62%,#0e7ec2 62.2%,#075e93 100%)}
+.scene.dusk{background:linear-gradient(#2b3f7e,#7a5fae 45%,#f2a65a 62%,#0a4c77 62.2%,#063a5e)}
+.sun{position:absolute;top:7%;right:9%;width:74px;height:74px;border-radius:50%;background:radial-gradient(#fff7cf,#ffd54d 65%,transparent 72%);filter:blur(.4px)}
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:.92;animation:drift linear infinite}
+.cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:160%;left:12%;top:-70%}
+.cloud::after{width:42%;height:120%;right:10%;top:-45%}
+@keyframes drift{from{transform:translateX(105vw)}to{transform:translateX(-40vw)}}
+.wave{position:absolute;left:0;width:200%;height:26px;animation:waveMove linear infinite;opacity:.85}
+@keyframes waveMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ship-float{animation:floaty 4s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+/* ============ KAPAL & AVATAR ============ */
+.ship-wrap{position:relative}
+.ship-wrap svg.ship{width:100%;display:block;filter:drop-shadow(0 10px 14px rgba(4,30,50,.35))}
+.deck{position:absolute;left:16%;right:16%;top:34%;height:10%}
+.av{position:absolute;width:26px;transition:left 2.4s ease-in-out;transform:translateX(-50%)}
+.av.flip .px{transform:scaleX(-1)}
+.av .px{display:block}
+.av .tag{position:absolute;bottom:105%;left:50%;transform:translateX(-50%);white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.av .nm{font-size:10px;font-weight:800;color:#fff;background:rgba(10,20,35,.72);padding:2px 7px;border-radius:999px}
+.av .bb{font-size:9px;font-weight:800;color:#fff;background:var(--tc);padding:1px 6px;border-radius:999px}
+.px .legB{display:none}.px.f2 .legA{display:none}.px.f2 .legB{display:inline}
+
+/* ============ VIEW UMUM ============ */
+.view{position:absolute;inset:0}
+#v-title .inner,#v-login .inner{position:relative;z-index:5;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;text-align:center}
+.gametitle{font-size:clamp(38px,7vw,84px);font-weight:900;letter-spacing:6px;color:#0c2c4a;
+  text-shadow:0 2px 0 #fff,0 10px 26px rgba(6,40,70,.35)}
+.subtitle{font-weight:700;color:#114b7c;background:rgba(255,255,255,.75);padding:8px 16px;border-radius:999px;font-size:clamp(12px,1.6vw,16px)}
+.role-grid{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.role-card{width:170px;padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;transition:.15s}
+.role-card:hover{transform:translateY(-4px)}
+.role-card .ic{font-size:34px}
+
+/* ============ HUD SISWA ============ */
+.hud-tl{position:absolute;top:12px;left:12px;z-index:20}
+.hud-tr{position:absolute;top:12px;right:12px;z-index:20;min-width:150px;text-align:right}
+.portrait{display:flex;align-items:center;gap:10px;padding:8px 14px}
+.portrait .pic{width:40px;height:40px;border-radius:12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:linear-gradient(#bfe6ff,#8fd0f7)}
+.teamplate{padding:10px 16px;border:2px solid var(--tc);background:rgba(255,255,255,.92)}
+.teamplate .tn{font-weight:900;color:var(--tc);letter-spacing:1px;font-size:14px}
+.teamplate .sc{font-size:26px;font-weight:900}
+.teamplate .rs{font-size:11px;color:var(--muted);font-weight:700}
+.hud-bl{position:absolute;left:12px;bottom:12px;z-index:20;max-width:70vw}
+.hud-br{position:absolute;right:12px;bottom:12px;z-index:20;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.bigbtn{font-size:16px;padding:14px 22px;border-radius:14px;box-shadow:0 8px 20px rgba(4,30,50,.35)}
+.chip{padding:8px 14px;border-radius:999px;font-weight:700;font-size:13px;background:rgba(255,255,255,.94);border:1px solid var(--border);display:inline-flex;align-items:center;gap:8px}
+.chip.warn{border-color:var(--warning);color:var(--warning)}
+.chip.bad{border-color:var(--destructive);color:var(--destructive)}
+
+/* tentakel usulan kru */
+.tent{position:relative;padding:10px 14px 10px 40px;border-radius:16px 16px 16px 4px;background:linear-gradient(#fff,#f3e8ff);border:2px solid #c084fc;animation:bob 2.6s ease-in-out infinite;box-shadow:0 6px 14px rgba(90,20,160,.25)}
+.tent::before{content:'🐙';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:20px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ============ PANEL GURU ============ */
+#v-teacher{background:var(--background);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.t-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.t-grid{display:grid;grid-template-columns:minmax(340px,1.1fr) 1fr;gap:14px;flex:1;min-height:0}
+.t-left,.t-right{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
+.ans-row{display:flex;align-items:stretch;gap:8px}
+.ans-main{flex:1;padding:10px 14px;border-radius:10px 0 0 10px;border:1px solid var(--border);border-right:none;background:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+.ans-pts{width:64px;border-radius:0 10px 10px 0;border:1px solid var(--border);background:var(--primary);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
+.ans-row.done .ans-main{background:#dcfce7;border-color:#86efac}
+.ans-row.done .ans-pts{background:var(--success)}
+.teamcard{padding:12px;display:flex;flex-direction:column;gap:8px;border-left:6px solid var(--tc)}
+.sub-bubble{background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600}
+table.rekap{width:100%;border-collapse:collapse;font-size:13px}
+table.rekap th,table.rekap td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:left}
+table.rekap th{background:#f1f5f9;font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+
+/* ============ OPERATOR ============ */
+#v-operator{display:grid;grid-template-columns:2fr 1fr;background:#0b1c33}
+.op-left{padding:22px;display:flex;flex-direction:column;gap:16px;background:linear-gradient(#f0f7ff,#e2eefc);min-width:0}
+.op-question{font-size:clamp(18px,2.3vw,30px);font-weight:800;padding:20px 24px}
+.op-shapes{display:flex;flex-direction:column;gap:10px;overflow:auto}
+.shape{display:flex;align-items:stretch;min-height:52px}
+.shape .no{width:48px;border-radius:12px 0 0 12px;background:var(--primary);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:18px}
+.shape .tx{flex:1;background:#fff;border:1px solid var(--border);border-left:none;border-right:none;display:flex;align-items:center;padding:0 16px;font-weight:700;font-size:clamp(13px,1.5vw,18px);color:#334155}
+.shape .pt{width:86px;border-radius:0 12px 12px 0;background:var(--primary);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:20px}
+.shape.open .tx{background:#ecfdf5;color:#065f46;animation:pop .45s}
+.shape.open .pt{background:var(--success);animation:pop .45s}
+@keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.op-right{position:relative;overflow:hidden;background:linear-gradient(#8ed2f8 0%,#bfe7fc 55%,#0d7fc4 55.2%,#084e7c 100%)}
+.op-teamrow{position:relative;height:25%;display:flex;align-items:center;justify-content:center}
+.op-shipbox{position:relative;width:78%}
+.op-name{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-weight:900;font-size:clamp(11px,1.2vw,16px);color:#fff;background:var(--tc);padding:3px 12px;border-radius:999px;letter-spacing:1px;box-shadow:0 3px 8px rgba(0,0,0,.3);white-space:nowrap}
+.op-score{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:rgba(8,20,38,.85);color:#fff;font-weight:900;font-size:clamp(14px,1.7vw,22px);padding:4px 18px;border-radius:999px;border:2px solid var(--tc)}
+.op-cloud{position:absolute;right:-6%;top:8%;max-width:52%;background:#fff;border:2px solid var(--tc);border-radius:18px;padding:7px 12px;font-size:clamp(10px,1.1vw,14px);font-weight:700;box-shadow:0 6px 14px rgba(0,0,0,.25);animation:pop .4s;z-index:6}
+.op-cloud::after{content:'';position:absolute;left:-9px;top:50%;border:6px solid transparent;border-right-color:var(--tc)}
+
+/* ============ FX LAYAR PENUH ============ */
+#fx-layer{position:fixed;inset:0;pointer-events:none;z-index:90;display:flex;align-items:center;justify-content:center}
+.fx-mark{width:min(46vmin,340px);height:min(46vmin,340px);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:900;color:#fff;animation:fxin .5s cubic-bezier(.2,1.4,.4,1)}
+.fx-mark.ok{background:radial-gradient(circle at 35% 30%,#4ade80,#15803d);box-shadow:0 0 0 14px rgba(34,197,94,.25)}
+.fx-mark.no{background:radial-gradient(circle at 35% 30%,#f87171,#b91c1c);box-shadow:0 0 0 14px rgba(239,68,68,.25);animation:fxin .5s,shake .5s .1s}
+.fx-mark.bomb{background:radial-gradient(circle at 35% 30%,#7f1d1d,#450a0a);box-shadow:0 0 0 14px rgba(220,38,38,.35)}
+.fx-mark .gi{font-size:min(20vmin,150px)}
+.fx-mark .lb{font-size:min(4vmin,26px);text-align:center;padding:0 10px}
+@keyframes fxin{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-14px)}75%{transform:translateX(14px)}}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:95;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+
+/* ============ MODAL & TOAST ============ */
+#modal-layer{position:fixed;inset:0;background:rgba(8,15,30,.55);backdrop-filter:blur(3px);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{width:min(480px,94vw);max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px;animation:pop .3s}
+.modal h3{font-size:17px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:99;background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:.25s}
+#toast.show{opacity:1}
+
+/* ============ TIM & PODIUM ============ */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;width:min(720px,94vw)}
+.team-card{padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;border-top:6px solid var(--tc);transition:.15s}
+.team-card:hover{transform:translateY(-4px)}
+.team-logo{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;background:var(--tc);box-shadow:0 6px 14px rgba(0,0,0,.25)}
+.podium{position:absolute;inset:0;z-index:10;display:flex;align-items:flex-end;justify-content:center;gap:4%;padding-bottom:4vh}
+.pod{display:flex;flex-direction:column;align-items:center;gap:8px;animation:rise .8s cubic-bezier(.2,1.2,.4,1)}
+@keyframes rise{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pod .ship-wrap{width:100%}
+.pod .medal{font-size:clamp(28px,4vw,52px)}
+.pod .pname{font-weight:900;font-size:clamp(14px,2vw,24px);color:var(--tc);background:#fff;padding:4px 16px;border-radius:999px;border:2px solid var(--tc)}
+.pod .psc{font-weight:900;color:#fff;background:rgba(8,20,38,.8);padding:3px 14px;border-radius:999px;font-size:clamp(12px,1.6vw,18px)}
+.rank1{width:min(30vw,340px);order:2}.rank2{width:min(24vw,270px);order:1;margin-bottom:6vh}.rank3{width:min(21vw,240px);order:3;margin-bottom:2vh}
+.member-list{display:flex;flex-direction:column;gap:8px;max-height:38vh;overflow:auto}
+.member-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
+.countdown{font-variant-numeric:tabular-nums;font-weight:900}
+.small{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ====== DEFS SVG KAPAL TERBANG FANTASY ====== -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="wingG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff7d6"/><stop offset="1" stop-color="#f0b64c"/>
+    </linearGradient>
+    <g id="ship">
+      <path d="M105 60 Q58 24 46 30 Q34 37 54 52 Q74 64 103 66 Z" fill="url(#wingG)" stroke="#d99a2b" stroke-width="2"/>
+      <path d="M123 60 Q170 24 182 30 Q194 37 174 52 Q154 64 125 66 Z" fill="url(#wingG)" stroke="#d99a2b" stroke-width="2"/>
+      <path d="M20 72 Q114 96 208 72 L188 108 Q114 126 40 108 Z" fill="#7c4a1e" stroke="#5b3413" stroke-width="2"/>
+      <path d="M20 72 Q114 96 208 72 L202 82 Q114 104 26 82 Z" fill="#a86a32"/>
+      <rect x="56" y="86" width="14" height="8" rx="3" fill="#2f2013"/>
+      <rect x="96" y="92" width="14" height="8" rx="3" fill="#2f2013"/>
+      <rect x="138" y="88" width="14" height="8" rx="3" fill="#2f2013"/>
+      <circle cx="63" cy="90" r="2.6" fill="#0f172a"/><circle cx="103" cy="96" r="2.6" fill="#0f172a"/><circle cx="145" cy="92" r="2.6" fill="#0f172a"/>
+      <rect x="112" y="14" width="4" height="60" fill="#5b3413"/>
+      <path d="M116 16 L158 26 L116 38 Z" fill="var(--flag,#dc2626)"/>
+      <circle cx="20" cy="70" r="6" fill="#f0b64c" stroke="#b47b16" stroke-width="2"/>
+      <circle cx="208" cy="70" r="6" fill="#f0b64c" stroke="#b47b16" stroke-width="2"/>
+    </g>
+  </defs>
+</svg>
+
+<div id="app">
+  <!-- ====== JUDUL ====== -->
+  <div id="v-title" class="view scene">
+    <div class="sun"></div><div id="title-clouds"></div>
+    <svg class="wave" style="bottom:30%" viewBox="0 0 1200 26" preserveAspectRatio="none"><path d="M0 14 Q75 0 150 14 T300 14 T450 14 T600 14 T750 14 T900 14 T1050 14 T1200 14 V26 H0 Z" fill="#bfe9ff"/></svg>
+    <div class="inner">
+      <div class="ship-wrap ship-float" style="width:min(240px,40vw);--flag:#0ea5e9"><svg class="ship" viewBox="0 0 228 132"><use href="#ship"/></svg></div>
+      <h1 class="gametitle">AMERTA LIMA</h1>
+      <div class="subtitle">⚓ Kuis PPKn Kelas X · Bhinneka Tunggal Ika (Unit 1–5) ⚓</div>
+      <div class="role-grid">
+        <button class="card role-card" onclick="openLogin('student')"><span class="ic">🧑‍✈️</span><b>MASUK SISWA</b><span class="small">Kru &amp; Kapten Kapal</span></button>
+        <button class="card role-card" onclick="openLogin('teacher')"><span class="ic">🧭</span><b>MASUK GURU</b><span class="small">Konfirmasi Jawaban</span></button>
+        <button class="card role-card" onclick="openLogin('operator')"><span class="ic">📽️</span><b>MASUK OPERATOR</b><span class="small">Tampilan Proyektor</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== LOGIN ====== -->
+  <div id="v-login" class="view scene hide">
+    <div class="sun"></div>
+    <div class="inner">
+      <div class="card" style="padding:24px;width:min(400px,92vw);display:flex;flex-direction:column;gap:12px">
+        <h2 id="login-title" style="text-align:center">Masuk</h2>
+        <div id="student-fields" class="col hide">
+          <input id="in-name" class="input" placeholder="Nama lengkap" maxlength="24"/>
+          <div class="row">
+            <input id="in-absen" class="input" placeholder="No. absen" inputmode="numeric" maxlength="3"/>
+            <input id="in-kelas" class="input" placeholder="Kelas (mis. X-3)" maxlength="10"/>
+          </div>
+        </div>
+        <input id="in-pass" class="input hide" type="password" placeholder="Password"/>
+        <div class="row">
+          <button class="btn grow" onclick="show('v-title')">⬅ Kembali</button>
+          <button class="btn btn-primary grow" onclick="doLogin()">Masuk ➜</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== PILIH TIM ====== -->
+  <div id="v-teams" class="view scene hide">
+    <div class="sun"></div>
+    <div class="inner">
+      <h2 style="color:#0c2c4a">🏴‍☠️ Pilih Kapalmu, Pelaut!</h2>
+      <div class="team-grid" id="team-grid"></div>
+    </div>
+  </div>
+
+  <!-- ====== SISWA ====== -->
+  <div id="v-student" class="view scene hide">
+    <div class="sun"></div><div class="stu-clouds"></div>
+    <div class="ship-wrap ship-float" id="stu-ship" style="position:absolute;left:50%;bottom:26%;transform:translateX(-50%);width:min(430px,86vw)">
+      <svg class="ship" viewBox="0 0 228 132"><use href="#ship"/></svg>
+      <div class="deck" id="stu-deck"></div>
+    </div>
+    <div class="hud-tl card portrait" id="stu-portrait"></div>
+    <div class="hud-tr"><div class="card teamplate" id="stu-plate"></div></div>
+    <div class="hud-bl col" id="stu-status"></div>
+    <div class="hud-br" id="stu-controls"></div>
+  </div>
+
+  <!-- ====== GURU ====== -->
+  <div id="v-teacher" class="view hide"></div>
+
+  <!-- ====== OPERATOR ====== -->
+  <div id="v-operator" class="view hide"></div>
+</div>
+
+<div id="fx-layer"></div>
+<div id="modal-layer" class="hide"></div>
+<div id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+/* ================= UTIL ================= */
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const socket=io();
+let S=null,role=null,mySid=localStorage.getItem('amerta_sid')||('s'+Math.random().toString(36).slice(2,10)),loginMode=null,profile=JSON.parse(localStorage.getItem('amerta_profile')||'null');
+localStorage.setItem('amerta_sid',mySid);
+const TEAMS={ares:{name:'TIM ARES',icon:'⚔️'},phobos:{name:'TIM PHOBOS',icon:'👁️'},hades:{name:'TIM HADES',icon:'🔱'},artemis:{name:'TIM ARTEMIS',icon:'🏹'}};
+const TKEYS=Object.keys(TEAMS);
+function show(id){$$('.view').forEach(v=>v.classList.add('hide'));$('#'+id).classList.remove('hide');}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
+function openModal(html){const l=$('#modal-layer');l.innerHTML='<div class="modal card">'+html+'</div>';l.classList.remove('hide');return l.firstChild;}
+function closeModal(){$('#modal-layer').classList.add('hide');$('#modal-layer').innerHTML='';}
+$('#modal-layer').addEventListener('click',e=>{if(e.target.id==='modal-layer'&&role!=='student')closeModal();});
+let AC=null;function beep(f,d=.15,type='sine',v=.15){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+/* awan acak */
+function makeClouds(box,n){for(let i=0;i<n;i++){const c=document.createElement('div');c.className='cloud';const w=60+Math.random()*120;c.style.width=w+'px';c.style.height=w*.32+'px';c.style.top=(4+Math.random()*52)+'%';c.style.animationDuration=(28+Math.random()*40)+'s';c.style.animationDelay=(-Math.random()*60)+'s';c.style.opacity=.55+Math.random()*.4;box.appendChild(c);}}
+makeClouds($('#title-clouds'),9);makeClouds($('.stu-clouds')||document.body,0);
+/* avatar pixel */
+function pxAvatar(color){return `<svg class="px" viewBox="0 0 8 8" shape-rendering="crispEdges" style="width:100%">
+<rect x="2" y="0" width="4" height="1" fill="${color}"/><rect x="3" y="1" width="2" height="2" fill="#ffd9b3"/>
+<rect x="2" y="3" width="4" height="2" fill="${color}"/><rect x="1" y="3" width="1" height="2" fill="${color}"/><rect x="6" y="3" width="1" height="2" fill="${color}"/>
+<g class="legA"><rect x="2" y="5" width="1" height="2" fill="#1e293b"/><rect x="5" y="6" width="1" height="1" fill="#1e293b"/></g>
+<g class="legB"><rect x="5" y="5" width="1" height="2" fill="#1e293b"/><rect x="2" y="6" width="1" height="1" fill="#1e293b"/></g></svg>`;}
+setInterval(()=>{$$('.px').forEach(p=>p.classList.toggle('f2'));},300);
+const walkers={};
+function ensureAvatar(container,m,teamId){
+  let el=walkers[container.id+'_'+m.id];
+  if(!el){el=document.createElement('div');el.className='av t-'+teamId;
+    el.innerHTML=`<div class="tag"><span class="nm"></span><span class="bb">${TEAMS[teamId].name}</span></div>${pxAvatar(getComputedStyle(document.documentElement).getPropertyValue('--t-'+teamId))}`;
+    container.appendChild(el);
+    walkers[container.id+'_'+m.id]={el,x:10+Math.random()*80,dir:1};
+    const w=walkers[container.id+'_'+m.id];
+    (function step(){w.x+=w.dir*(8+Math.random()*18);if(w.x>92){w.x=92;w.dir=-1;}if(w.x<8){w.x=8;w.dir=1;}
+      el.style.left=w.x+'%';el.classList.toggle('flip',w.dir<0);setTimeout(step,1600+Math.random()*2200);})();
+  }
+  el.querySelector('.nm').textContent=m.name;
+  return el;
+}
+function syncDeck(container,members,teamId){
+  const ids=new Set(members.map(m=>m.id));
+  Object.keys(walkers).forEach(k=>{if(k.startsWith(container.id+'_')){const sid=k.split('_')[1];if(!ids.has(sid)){walkers[k].el.remove();delete walkers[k];}}});
+  members.forEach(m=>ensureAvatar(container,m,teamId));
+}
+/* ================= AUTH ================= */
+function openLogin(m){loginMode=m;$('#student-fields').classList.toggle('hide',m!=='student');$('#in-pass').classList.toggle('hide',m==='student');
+  $('#login-title').textContent=m==='student'?'🧑‍✈️ Masuk sebagai Siswa':m==='teacher'?'🧭 Masuk sebagai Guru':'📽️ Masuk sebagai Operator';show('v-login');}
+function doLogin(){
+  if(loginMode==='student'){
+    const name=$('#in-name').value.trim(),absen=$('#in-absen').value.trim(),kelas=$('#in-kelas').value.trim();
+    if(!name||!absen||!kelas)return toast('Lengkapi nama, absen, dan kelas!');
+    profile={name,absen,kelas};localStorage.setItem('amerta_profile',JSON.stringify(profile));
+    role='student';buildTeamGrid();show('v-teams');
+  }else{
+    const pass=$('#in-pass').value;role=loginMode;
+    socket.emit('hello',{role:loginMode,pass});
+  }
+}
+function buildTeamGrid(){
+  const g=$('#team-grid');g.innerHTML='';
+  TKEYS.forEach(t=>{const d=document.createElement('button');d.className='card team-card t-'+t;
+    d.innerHTML=`<div class="team-logo">${TEAMS[t].icon}</div><b style="color:var(--tc)">${TEAMS[t].name}</b><span class="small" id="cnt-${t}"></span>`;
+    d.onclick=()=>{profile.team=t;localStorage.setItem('amerta_profile',JSON.stringify(profile));socket.emit('hello',{role:'student',sid:mySid,...profile,team:t});};
+    g.appendChild(d);});
+}
+socket.on('ok',d=>{if(d.sid)mySid=d.sid;toast('Berhasil masuk! ⚓');});
+socket.on('err',m=>toast('⚠️ '+m));
+socket.on('bye',()=>{toast('Koneksi terputus, muat ulang halaman.');});
+/* auto re-login siswa */
+window.addEventListener('load',()=>{if(profile&&profile.team){role='student';socket.emit('hello',{role:'student',sid:mySid,...profile});}});
+/* ================= STATE ROUTER ================= */
+socket.on('state',s=>{S=s;route();});
+function route(){
+  if(!S)return;
+  if(role==='teacher')return renderTeacher();
+  if(role==='operator')return renderOperator();
+  if(role==='student')return renderStudent();
+  if(S.phase!=='lobby'){/* belum login: tetap di judul */}
+}
+/* ================= FX ================= */
+socket.on('fx',f=>{
+  if(f.type==='correct'){fxMark('ok','✔',(S&&S.teams&&S.teams[f.team]?S.teams[f.team].name:'')+' +'+f.pts+' poin!');beep(660,.12);setTimeout(()=>beep(880,.2),130);}
+  if(f.type==='wrong'){fxMark('no','✖','Jawaban salah…');beep(220,.3,'sawtooth');}
+  if(f.type==='bomb'){const mine=role==='student'&&S.me&&S.me.me&&S.me.me.team===f.team;
+    if(role==='teacher'||role==='operator'||mine){fxMark('bomb','💣','BOM GILA! −'+f.pts+' poin hangus!');beep(90,.6,'square',.3);}}
+  if(f.type==='burn'){if(role!=='student'||(S.me&&S.me.me.team===f.team)){fxMark('no','🔥','Soal curian salah — poin jawaban hangus!');beep(180,.4,'sawtooth');}}
+  if(f.type==='steal'){fxMark('ok','🏴‍☠️',(S.teams[f.team].name)+' merampas '+f.pts+' poin'+(f.from?' dari '+S.teams[f.from].name:'')+'!');beep(520,.1);setTimeout(()=>beep(780,.25),120);}
+  if(f.type==='stealReady'){if(role==='student'&&S.me&&S.me.me.r6)toast('✅ Benar! Pilih kapal yang akan dirampok!');}
+  if(f.type==='undo')toast('↩️ Aksi terakhir dibatalkan (Undo).');
+});
+function fxMark(cls,icon,label){
+  const l=$('#fx-layer');const d=document.createElement('div');d.className='fx-mark '+cls;
+  d.innerHTML=`<div class="gi">${icon}</div><div class="lb">${label}</div>`;l.appendChild(d);
+  setTimeout(()=>{d.style.transition='.4s';d.style.opacity='0';d.style.transform='scale(1.3)';setTimeout(()=>d.remove(),400);},1900);
+}
+function confetti(n=130){const cols=['#f59e0b','#22c55e','#3b82f6','#ef4444','#a855f7','#ec4899','#facc15'];
+  for(let i=0;i<n;i++){const c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'vw';
+    c.style.background=cols[Math.floor(Math.random()*cols.length)];c.style.animationDuration=(2.4+Math.random()*2.6)+'s';
+    c.style.animationDelay=(Math.random()*1.2)+'s';c.style.transform='rotate('+Math.random()*360+'deg)';document.body.appendChild(c);setTimeout(()=>c.remove(),6500);}}
+/* ================= RENDER: SISWA ================= */
+let stuCloudsDone=false;
+function renderStudent(){
+  if(!S.me){show('v-teams');buildTeamGrid();return;}
+  show('v-student');
+  if(!stuCloudsDone){makeClouds($('.stu-clouds'),8);stuCloudsDone=true;}
+  const me=S.me.me,team=me.team;
+  $('#stu-ship').style.setProperty('--flag',getComputedStyle(document.documentElement).getPropertyValue('--t-'+team));
+  $('#stu-ship').className='ship-wrap ship-float t-'+team;
+  syncDeck($('#stu-deck'),me.members,team);
+  $('#stu-portrait').innerHTML=`<div class="pic t-${team}">${pxAvatar('var(--tc)')}</div>
+    <div class="col" style="gap:2px"><b>${me.name}</b><span class="small">No. ${me.absen} · ${me.kelas}</span>
+    <span class="badge t-${team}" style="color:var(--tc)">${TEAMS[team].icon} ${TEAMS[team].name}${me.captain?' · 👑 KAPTEN':''}</span></div>`;
+  $('#stu-plate').innerHTML=`<div class="tn">${TEAMS[team].icon} ${TEAMS[team].name}</div>
+    <div class="sc">${S.scores[team]}</div><div class="rs">+${S.roundScores[team]} round ini ${S.locked[team]?'· 🔒 terkunci':''}</div>`;
+  const st=$('#stu-status');st.innerHTML='';const ct=$('#stu-controls');ct.innerHTML='';
+  /* LOBI: pilih kapten */
+  if(S.phase==='lobby'){
+    st.innerHTML=`<div class="chip">🕊️ Menunggu guru memulai pelayaran…</div>`;
+    ct.innerHTML=`<button class="btn bigbtn btn-primary" onclick="lobbyVoteUI()">🗳️ Pilih Kapten Kapal</button>`;
+    return;
+  }
+  if(S.phase==='finished'){renderPodiumFor($('#stu-status'));st.innerHTML='<div class="chip">🏆 Pelayaran selesai!</div>';return;}
+  /* Ronde 7 */
+  if(S.round===7)return renderR7Student(me,st,ct);
+  const answering=S.roundPhase==='answering'&&!S.locked[team];
+  st.innerHTML=`<div class="chip">Ronde ${S.round}/7 · <b style="margin-left:4px">${S.meta.name}</b></div>
+    <div class="chip ${S.locked[team]?'bad':''}">${S.locked[team]?'🔒 Kapalmu terkunci di ronde ini':(S.roundPhase==='done'?'✅ Ronde selesai — menunggu ronde berikutnya':'🎯 Menunggu jawaban kapten dikirim ke guru…')}</div>
+    ${S.revealed&&Object.keys(S.revealed).length?`<button class="btn" onclick="boardModal()">📋 Papan Jawaban (${Object.keys(S.revealed).length}/${S.shapes})</button>`:''}`;
+  if(S.me.me.r6){return renderR6Student(S.me.me.r6,me,st,ct);}
+  if(!answering)return;
+  if(me.captain){
+    ct.innerHTML=`${S.pendingSub?`<div class="chip warn">⏳ Menunggu konfirmasi guru: “${S.pendingSub.text}”</div>`:
+      `<button class="btn bigbtn btn-primary" onclick="captainDesk()">🐙 Meja Kapten${me.teamProps.length?` (${me.teamProps.length})`:''}</button>
+       <button class="btn bigbtn" onclick="typeModal(true)">✍️ Tulis Jawaban Sendiri</button>`}`;
+  }else{
+    ct.innerHTML=`${S.pendingSub?`<div class="chip warn">⏳ Kapten mengirim: “${S.pendingSub.text}”</div>`:
+      `<button class="btn bigbtn btn-primary" onclick="typeModal(false)">🐙 Usulkan Jawaban ke Kapten</button>`}
+      ${me.myProps.length?`<button class="btn" onclick="myPropsModal()">📥 Usulanku (${me.myProps.length})</button>`:''}`;
+  }
+}
+function lobbyVoteUI(){
+  const me=S.me.me;
+  const rows=me.members.map(m=>`<div class="member-row"><b class="t-${me.team}" style="color:var(--tc)">${m.name}</b>
+    ${m.captain?'<span class="badge" style="border-color:gold;color:#b45309">👑 Kapten</span>':'<span class="small">'+m.votes+' suara</span>'}
+    <span class="grow"></span>${m.captain?'':`<button class="btn" style="padding:6px 12px" onclick="socket.emit('vote',{target:'${m.id}'})">Pilih</button>`}</div>`).join('');
+  openModal(`<h3>🗳️ Pemilihan Kapten — ${TEAMS[me.team].name}</h3><p class="small">Kapten bertugas memilih usulan kru dan mengirimkannya ke guru.</p><div class="member-list">${rows}</div><button class="btn" onclick="closeModal()">Tutup</button>`);
+}
+function typeModal(isCaptain){
+  openModal(`<h3>${isCaptain?'✍️ Tulis jawaban kapten':'🐙 Usulkan jawaban ke kapten'}</h3>
+    <input id="prop-in" class="input" maxlength="80" placeholder="Tulis jawaban survei di sini…"/>
+    <div class="row"><button class="btn grow" onclick="closeModal()">Batal</button>
+    <button class="btn btn-primary grow" onclick="sendProp(${isCaptain})">Kirim ➜</button></div>`);
+  setTimeout(()=>$('#prop-in').focus(),60);
+}
+function sendProp(isCap){const v=$('#prop-in').value.trim();if(!v)return;
+  socket.emit(isCap?'cap:submit':'crew:propose',{text:v});closeModal();toast(isCap?'Jawaban dikirim ke guru!':'Usulan dikirim ke kapten!');}
+function myPropsModal(){
+  const rows=S.me.me.myProps.map(p=>`<div class="member-row"><span>“${p.text}”</span><span class="grow"></span>
+    <button class="btn btn-danger" style="padding:6px 10px" onclick="socket.emit('crew:cancel',{id:'${p.id}'});closeModal()">Batal</button></div>`).join('');
+  openModal(`<h3>📥 Usulanku yang menunggu</h3><div class="member-list">${rows||'<span class="small">Tidak ada.</span>'}</div><button class="btn" onclick="closeModal()">Tutup</button>`);
+}
+function captainDesk(){
+  const me=S.me.me;
+  const rows=me.teamProps.map(p=>`<button class="tent" onclick="proposalDetail('${p.id}')"><b>${p.authorName}</b><div class="small">Ketuk untuk lihat usulan 🐙</div></button>`).join('');
+  openModal(`<h3>🐙 Usulan Kru Kapal</h3><p class="small">Tentakel muncul dari laut! Ketuk untuk membaca, lalu kirim ke guru atau tolak.</p>
+    <div class="member-list" style="gap:10px">${rows||'<span class="small">Belum ada usulan kru.</span>'}</div>
+    <button class="btn" onclick="closeModal()">Tutup</button>`);
+}
+function proposalDetail(id){
+  const p=S.me.me.teamProps.find(x=>x.id===id);if(!p)return;
+  openModal(`<h3>🐙 Usulan dari ${p.authorName}</h3><div class="sub-bubble" style="font-size:16px">“${p.text}”</div>
+    <div class="row"><button class="btn btn-danger grow" onclick="socket.emit('cap:reject',{id:'${id}'});captainDesk()">✖ Tolak</button>
+    <button class="btn btn-success grow" onclick="socket.emit('cap:choose',{id:'${id}'});closeModal();toast('Dikirim ke guru! ✅')">✔ Kirim ke Guru</button></div>`);
+}
+function boardModal(){
+  const rows=[];for(let i=0;i<S.shapes;i++){const r=S.revealed[i];
+    rows.push(`<div class="ans-row ${r?'done':''}"><div class="ans-main">${i+1}. ${r?r.t:'•••••••'}</div><div class="ans-pts">${r?r.p:'?'}</div></div>`);}
+  openModal(`<h3>📋 Papan Jawaban</h3><div class="col" style="gap:8px">${rows.join('')}</div><button class="btn" onclick="closeModal()">Tutup</button>`);
+}
+/* ---- Round 6 (curi poin) ---- */
+function renderR6Student(r6,me,st,ct){
+  if(r6.phase==='q'){
+    st.innerHTML=`<div class="chip warn">🏴‍☠️ SOAL CURIAN! Jawab benar = boleh merampok poin tim lain (${r6.earned} poin). Salah = poin jawaban HANGUS!</div>`;
+    ct.innerHTML=`<button class="btn bigbtn btn-primary" onclick="r6Quiz()">⚡ Jawab Soal Curian (<span class="countdown" data-dl="${r6.deadline}"></span>)</button>`;
+  }else if(r6.phase==='pick'){
+    st.innerHTML=`<div class="chip" style="border-color:gold;color:#b45309">🎉 Benar! Pilih kapal korban perampokan senilai ${r6.earned} poin!</div>`;
+    const others=TKEYS.filter(t=>t!==me.team).map(t=>`<button class="btn t-${t}" style="border-color:var(--tc);color:var(--tc)" onclick="socket.emit('r6:pick',{target:'${t}'});closeModal()">${TEAMS[t].icon} ${TEAMS[t].name} (${S.scores[t]} poin)</button>`).join('');
+    ct.innerHTML=`<button class="btn bigbtn btn-primary" onclick="openModal('<h3>🏴‍☠️ Pilih kapal korban</h3><div class=\\'col\\'>${others.replace(/'/g,'&#39;')}</div>'))">🗡️ RAMPAS POIN!</button>`;
+  }
+}
+function r6Quiz(){
+  const r6=S.me.me.r6;if(!r6||!r6.q)return;
+  const opts=r6.q.o.map((o,i)=>`<button class="btn" style="justify-content:flex-start" onclick="socket.emit('r6:answer',{choice:${i}});closeModal()">${String.fromCharCode(65+i)}. ${o}</button>`).join('');
+  openModal(`<h3>⚡ Soal Curian</h3><p class="small">Waktu: <b class="countdown" data-dl="${r6.deadline}"></b> · Benar = pilih korban rampokan · Salah = poin jawaban hangus</p>
+    <div class="sub-bubble" style="font-size:15px">${r6.q.q}</div><div class="col">${opts}</div>
+    <button class="btn btn-ghost" onclick="socket.emit('r6:skip');closeModal()">🕊️ Lewatkan (poin tetap aman)</button>`);
+}
+/* ---- Round 7 ---- */
+function renderR7Student(me,st,ct){
+  const r7=S.r7;st.innerHTML=`<div class="chip" style="border-color:gold;color:#b45309">👑 RONDE FINAL — DEFEAT THE KING</div>`;
+  if(r7.phase==='bet'){
+    if(!me.captain){ct.innerHTML=`<div class="chip">🎲 Kapten sedang memilih taruhan rahasia…</div>`;return;}
+    if(me.myBet!==null){ct.innerHTML=`<div class="chip">🔒 Taruhan terkunci: ${me.myBet}% dari ${S.scores[me.team]} poin</div>`;return;}
+    ct.innerHTML=`<div class="chip">Pilih taruhan (rahasia!):</div>`+ [0,25,50,100].map(p=>
+      `<button class="btn bigbtn" onclick="socket.emit('r7:bet',{pct:${p}})">${p===0?'🕊️ 0% (aman)':p+'% · '+Math.floor(S.scores[me.team]*p/100)+' poin'}</button>`).join('');
+  }else if(r7.phase==='answer'){
+    if(me.myAnswer){ct.innerHTML=`<div class="chip">🔒 Jawaban terkunci: “${me.myAnswer}”</div>`;return;}
+    if(!me.captain){ct.innerHTML=`<div class="chip">⏳ Kapten sedang menulis jawaban… <b class="countdown" data-dl="${r7.deadline}"></b></div>`;return;}
+    ct.innerHTML=`<div class="chip bad">⏱️ <span class="countdown" data-dl="${r7.deadline}"></span> tersisa!</div>
+      <button class="btn bigbtn btn-primary" onclick="r7AnswerModal()">✍️ Tulis Jawaban Final</button>`;
+  }else if(r7.phase==='judge'){
+    ct.innerHTML=`<div class="chip">🧭 Guru sedang menilai jawaban setiap kapal…</div>`;
+  }else if(r7.phase==='reveal'){
+    const rows=TKEYS.map(t=>{const r=r7.results[t];return `<div class="member-row t-${t}"><b style="color:var(--tc)">${TEAMS[t].icon} ${TEAMS[t].name}</b>
+      <span class="small">“${r.text}”</span><span class="grow"></span>
+      <span class="badge ${r.ok?'':'bad'}" style="${r.ok?'border-color:#16a34a;color:#16a34a':''}">${r.ok?'✔ BENAR':'✖ SALAH'}</span>
+      <b>${r.delta>=0?'+':''}${r.delta}</b></div>`;}).join('');
+    openModal(`<h3>👑 FINAL REVEAL</h3><div class="member-list">${rows}</div>
+      <div class="chip">Skor akhir ${TEAMS[me.team].name}: <b>${S.scores[me.team]}</b></div><button class="btn" onclick="closeModal()">Tutup</button>`);
+    confetti(60);
+  }
+}
+function r7AnswerModal(){
+  openModal(`<h3>👑 Jawaban Final</h3><p class="small">${S.question}</p>
+    <textarea id="r7-in" class="input" rows="3" maxlength="160" placeholder="Tulis sikap nyata…"></textarea>
+    <div class="row"><span class="countdown small" data-dl="${S.r7.deadline}"></span><span class="grow"></span>
+    <button class="btn btn-primary" onclick="const v=$('#r7-in').value.trim();if(v){socket.emit('r7:answer',{text:v});closeModal();}">🔒 Kunci Jawaban</button></div>`);
+}
+function renderPodiumFor(box){confetti(120);}
+/* ================= RENDER: OPERATOR ================= */
+function renderOperator(){
+  show('v-operator');const v=$('#v-operator');
+  if(S.phase==='lobby'){
+    v.innerHTML=`<div class="op-left center" style="background:linear-gradient(#0c2c4a,#114b7c)">
+      <div class="ship-wrap ship-float" style="width:min(300px,30vw);--flag:#f0b64c"><svg class="ship" viewBox="0 0 228 132"><use href="#ship"/></svg></div>
+      <h1 style="color:#fff;letter-spacing:8px;font-size:clamp(34px,6vw,80px)">AMERTA LIMA</h1>
+      <div class="badge" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.3)">⚓ Menunggu guru memulai pelayaran…</div>
+      <div class="row" style="flex-wrap:wrap;justify-content:center">${TKEYS.map(t=>`<div class="badge t-${t}" style="color:var(--tc);background:#fff">${TEAMS[t].icon} ${TEAMS[t].name} · ${S.teams[t].memberCount} kru</div>`).join('')}</div></div>
+      <div class="op-right" id="op-sea"></div>`;
+    buildOpSea($('#op-sea'),false);return;
+  }
+  if(S.phase==='finished'){renderPodiumOp(v);return;}
+  /* layout utama */
+  if(!v.querySelector('.op-left')||v.dataset.mode!=='game'){
+    v.dataset.mode='game';
+    v.innerHTML=`<div class="op-left">
+        <div class="row"><span class="badge" id="op-round"></span><span class="badge" id="op-tag" style="color:#b45309;border-color:#fcd34d;background:#fffbeb"></span></div>
+        <div class="card op-question" id="op-q"></div>
+        <div class="op-shapes" id="op-shapes"></div></div>
+      <div class="op-right" id="op-sea"></div>`;
+    buildOpSea($('#op-sea'),true);
+  }
+  $('#op-round').textContent=S.round===7?'👑 RONDE 7/7 · '+S.meta.name:`⛵ RONDE ${S.round}/7 · ${S.meta.name}`;
+  $('#op-tag').textContent=S.meta.tag;
+  $('#op-q').textContent=S.question;
+  const sh=$('#op-shapes');sh.innerHTML='';
+  if(S.round===7){
+    const rows=TKEYS.map(t=>{
+      const txt=S.r7.answers[t],stt=S.r7.phase==='reveal'?S.r7.results[t]:null;
+      return `<div class="shape ${stt?'open':''}"><div class="no">${TEAMS[t].icon}</div>
+        <div class="tx">${stt?`<span class="t-${t}" style="color:var(--tc);font-weight:900;margin-right:8px">${S.teams[t].name}:</span>“${txt||'(tidak menjawab)'}” ${stt.ok?'✅':'❌'} (taruhan ${stt.pct}%, ${stt.delta>=0?'+':''}${stt.delta})`:(txt?`🔒 ${S.teams[t].name} sudah mengunci jawaban`:(S.r7.answered.includes(t)?'':'⏳ '+S.teams[t].name+' menunggu…'))}</div>
+        <div class="pt">${stt?S.scores[t]:'?'}</div></div>`;}).join('');
+    sh.innerHTML=rows;
+  }else{
+    for(let i=0;i<S.shapes;i++){const r=S.revealed[i];
+      const d=document.createElement('div');d.className='shape'+(r?' open':'');
+      d.innerHTML=`<div class="no">${i+1}</div><div class="tx">${r?r.t:'? ? ? ? ? ? ? ? ?'}</div><div class="pt">${r?r.p:'?'}</div>`;
+      sh.appendChild(d);}
+  }
+  updateOpShips();
+}
+function buildOpSea(box,withTeams){
+  box.innerHTML='';makeClouds(box,7);
+  const w1=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  box.insertAdjacentHTML('beforeend',`<svg class="wave" style="top:54.4%;height:16px;opacity:.9" viewBox="0 0 1200 26" preserveAspectRatio="none"><path d="M0 14 Q75 0 150 14 T300 14 T450 14 T600 14 T750 14 T900 14 T1050 14 T1200 14 V26 H0 Z" fill="#bfe9ff"/></svg>`);
+  if(!withTeams)return;
+  TKEYS.forEach((t,i)=>{
+    const row=document.createElement('div');row.className='op-teamrow t-'+t;row.id='optr-'+t;row.style.top=(i*25)+'%';
+    row.innerHTML=`<div class="op-shipbox ship-float" style="--flag:var(--tc);animation-delay:${i*.6}s">
+      <div class="op-name">${TEAMS[t].icon} ${TEAMS[t].name}</div>
+      <svg class="ship" viewBox="0 0 228 132"><use href="#ship"/></svg>
+      <div class="deck" id="opdeck-${t}" style="top:38%"></div>
+      <div class="op-score" id="opsc-${t}">${S.scores[t]}</div>
+      <div id="opcloud-${t}"></div></div>`;
+    box.appendChild(row);
+  });
+}
+function updateOpShips(){
+  TKEYS.forEach(t=>{
+    const sc=$('#opsc-'+t);if(!sc)return;
+    animateNumber(sc,S.scores[t]);
+    const cl=$('#opcloud-'+t);const sub=S.submissions[t];
+    if(sub&&sub.status==='pending')cl.innerHTML=`<div class="op-cloud">💬 ${sub.text}</div>`;
+    else if(sub&&sub.status==='correct')cl.innerHTML=`<div class="op-cloud" style="border-color:#16a34a">✅ Benar!</div>`;
+    else if(sub&&sub.status==='wrong')cl.innerHTML=`<div class="op-cloud" style="border-color:#dc2626">❌ Salah${S.round===4?' 💣':''}</div>`;
+    else cl.innerHTML=S.locked[t]?`<div class="op-cloud" style="opacity:.8">🔒</div>`:'';
+  });
+}
+function animateNumber(el,to){
+  const from=parseInt(el.dataset.v||el.textContent)||0;el.dataset.v=to;
+  if(from===to){el.textContent=to;return;}
+  const t0=performance.now(),dur=900;
+  (function tick(now){const k=Math.min(1,(now-t0)/dur);el.textContent=Math.round(from+(to-from)*k);if(k<1)requestAnimationFrame(tick);})(t0);
+}
+function renderPodiumOp(v){
+  v.innerHTML=`<div class="scene dusk" style="position:absolute;inset:0">
+    <div class="podium" id="podium"></div>
+    <h1 style="position:absolute;top:4vh;width:100%;text-align:center;color:#fff;letter-spacing:6px;font-size:clamp(24px,4vw,54px);text-shadow:0 4px 18px rgba(0,0,0,.5)">🏆 JUARA AMERTA LIMA 🏆</h1></div>`;
+  buildPodium($('#podium'));confetti(160);setTimeout(()=>confetti(120),1800);
+}
+function buildPodium(box){
+  const order=S.winnerOrder||[...TKEYS].sort((a,b)=>S.scores[b]-S.scores[a]);
+  const medals=['🥇','🥈','🥉'];const cls=['rank1','rank2','rank3'];const lbl=['JUARA 1','JUARA 2','JUARA 3'];
+  box.innerHTML='';
+  order.slice(0,3).forEach((t,i)=>{
+    const p=document.createElement('div');p.className='pod '+cls[i]+' t-'+t;
+    p.innerHTML=`<div class="medal">${medals[i]}</div>
+      <div class="ship-wrap ship-float" style="--flag:var(--tc)"><svg class="ship" viewBox="0 0 228 132"><use href="#ship"/></svg><div class="deck" id="pod-deck-${t}"></div></div>
+      <div class="pname">${TEAMS[t].icon} ${TEAMS[t].name}</div><div class="lbl" style="color:#fff;font-weight:800">${lbl[i]}</div>
+      <div class="psc">${S.scores[t]} POIN</div>`;
+    box.appendChild(p);
+    setTimeout(()=>syncDeck($('#pod-deck-'+t),Object.values(S.teams).length?podMembers(t):[] ,t),50);
+  });
+  function podMembers(t){/* daftar kru dari state teacher bila ada, fallback tanpa avatar */return window._podMembers&&window._podMembers[t]||[];}
+}
+/* ================= RENDER: GURU ================= */
+function renderTeacher(){
+  show('v-teacher');const v=$('#v-teacher');
+  window._podMembers={};if(S.teacher)TKEYS.forEach(t=>window._podMembers[t]=S.teacher.students.filter(s=>s.team===t));
+  const head=`<div class="t-head card" style="padding:10px 16px">
+    <b style="font-size:16px">⚓ AMERTA LIMA</b>
+    <span class="badge">${S.phase==='lobby'?'LOBI':S.phase==='finished'?'SELESAI':'Ronde '+S.round+'/7 · '+S.meta.name}</span>
+    ${S.meta?`<span class="badge" style="color:#b45309;border-color:#fcd34d;background:#fffbeb">${S.meta.tag}</span>`:''}
+    <span class="grow"></span>
+    <button class="btn" ${S.histLen?'':'disabled'} onclick="socket.emit('t:undo')">↩️ Undo</button>
+    <button class="btn btn-danger" onclick="if(confirm('Reset total permainan? Skor kembali 0.'))socket.emit('t:reset')">🔄 Reset</button>
+    <button class="btn btn-ghost" onclick="rekapModal()">📊 Rekap Nilai</button></div>`;
+  let body='';
+  if(S.phase==='lobby'){
+    body=`<div class="t-grid"><div class="t-left card" style="padding:16px">
+      <h3>🧭 Panel Guru — Lobi</h3><p class="small">Pastikan setiap tim punya kapten, lalu mulai pelayaran.</p>
+      <button class="btn btn-primary" style="font-size:16px;padding:14px" onclick="socket.emit('t:start')">⛵ MULAI PERMAINAN (Ronde 1)</button>
+      ${TKEYS.map(t=>`<div class="card teamcard t-${t}"><div class="row"><b style="color:var(--tc)">${TEAMS[t].icon} ${TEAMS[t].name}</b>
+        <span class="badge">${S.teams[t].memberCount} kru</span><span class="badge" style="border-color:gold;color:#b45309">👑 ${S.teams[t].captainName}</span>
+        <span class="grow"></span><button class="btn" style="padding:6px 10px" onclick="socket.emit('t:reVote',{team:'${t}'})">🗳️ Ulang voting</button></div>
+        <div class="small">${(S.teacher.students.filter(s=>s.team===t).map(s=>`<span class="chip" style="margin:2px">${s.name} <button style="font-size:10px" onclick="socket.emit('t:makeCaptain',{id:'${s.id}'})">👑</button></span>`)).join('')||'Belum ada anggota.'}</div></div>`).join('')}
+      </div><div class="t-right">${rekapHTML()}</div></div>`;
+  }else if(S.phase==='finished'){
+    body=`<div class="t-grid"><div class="t-left card center" style="padding:20px">
+      <h2>🏆 Permainan Selesai!</h2>
+      ${(S.winnerOrder||[]).map((t,i)=>`<div class="chip" style="font-size:15px">${['🥇','🥈','🥉','·'][i]} <b class="t-${t}" style="color:var(--tc)">${TEAMS[t].name}</b> — ${S.scores[t]} poin</div>`).join('')}
+      <button class="btn btn-primary" onclick="socket.emit('t:podium')">🎉 Tampilkan Podium di Proyektor</button>
+      <button class="btn btn-danger" onclick="if(confirm('Reset untuk permainan baru?'))socket.emit('t:reset')">🔄 Main Lagi</button></div>
+      <div class="t-right">${rekapHTML()}</div></div>`;
+  }else if(S.round===7){
+    body=teacherR7HTML();
+  }else{
+    body=`<div class="t-grid">
+      <div class="t-left">
+        <div class="card" style="padding:16px"><b>📜 Pertanyaan Ronde ${S.round}</b><p style="margin-top:8px;font-size:15px">${S.question}</p></div>
+        <div class="card" style="padding:16px"><div class="row"><b>🗝️ Kunci Jawaban (hanya guru)</b><span class="badge">poin = ×${S.meta.mult}</span></div>
+          <div class="col" style="margin-top:10px;gap:8px">
+          ${S.teacher.answers.map(a=>`<div class="ans-row ${a.revealed?'done':''}"><div class="ans-main">${a.idx+1}. ${a.t}${a.hidden?' <span class="badge" style="border-color:gold;color:#b45309">🗝️ TERSEMBUNYI</span>':''}</div><div class="ans-pts">${Math.round(a.p*S.meta.mult)}</div></div>`).join('')}
+          </div>
+          <div class="row" style="margin-top:12px"><button class="btn" onclick="socket.emit('t:endRound')">⏹ Akhiri Ronde</button>
+          ${S.roundPhase==='done'?`<button class="btn btn-primary" onclick="socket.emit('t:next')">Ronde Berikutnya ➜</button>`:''}</div></div>
+      </div>
+      <div class="t-right">${TKEYS.map(t=>teacherTeamCard(t)).join('')}</div></div>`;
+  }
+  v.innerHTML=head+body;
+}
+function teacherTeamCard(t){
+  const sub=S.submissions[t];
+  return `<div class="card teamcard t-${t}">
+    <div class="row"><div class="ship-wrap" style="width:74px;--flag:var(--tc)"><svg class="ship" viewBox="0 0 228 132"><use href="#ship"/></svg></div>
+      <div class="col" style="gap:2px"><b style="color:var(--tc)">${TEAMS[t].icon} ${TEAMS[t].name}</b>
+      <span class="small">Skor: <b>${S.scores[t]}</b> · Round ini: +${S.roundScores[t]} ${S.locked[t]?'· 🔒':''}</span></div></div>
+    ${sub&&sub.status==='pending'?`<div class="sub-bubble">💬 <b>${sub.proposerName}:</b> “${sub.text}”</div>
+      <div class="row"><button class="btn btn-success grow" onclick="pickShape('${t}')">✔ Benar</button>
+      <button class="btn btn-danger grow" onclick="socket.emit('t:judgeWrong',{team:'${t}'})">✖ Salah</button></div>`
+    :sub?`<div class="sub-bubble" style="${sub.status==='correct'?'background:#dcfce7;border-color:#86efac':'background:#fee2e2;border-color:#fca5a5'}">${sub.status==='correct'?'✅':'❌'} “${sub.text}”</div>`
+    :`<span class="small">Belum ada jawaban diajukan.</span>`}
+    ${S.r6pub[t]==='q'?`<span class="chip warn">🏴‍☠️ Sedang menjawab soal curian…</span>`:''}
+    ${S.r6pub[t]==='pick'?`<span class="chip warn">🗡️ Sedang memilih korban rampokan…</span>`:''}
+  </div>`;
+}
+function pickShape(team){
+  const opts=S.teacher.answers.filter(a=>!a.revealed).map(a=>
+    `<button class="ans-row" style="width:100%;text-align:left" onclick="socket.emit('t:judgeRight',{team:'${team}',idx:${a.idx}});closeModal()">
+      <div class="ans-main">${a.idx+1}. ${a.t}${a.hidden?' 🗝️':''}</div><div class="ans-pts">${Math.round(a.p*S.meta.mult)}</div></button>`).join('');
+  openModal(`<h3>✔ Jawaban ${TEAMS[team].name} BENAR — pilih shape yang dibuka di proyektor</h3>
+    <p class="small">Pilih shape yang paling mirip dengan jawaban kapten kapal.</p><div class="col" style="gap:8px">${opts}</div>`);
+}
+function teacherR7HTML(){
+  const r7=S.r7;
+  let left=`<div class="card" style="padding:16px"><b>👑 Ronde Final — Defeat the King</b><p style="margin-top:8px">${QUESTIONS[6].q}</p>`;
+  if(r7.phase==='bet')left+=`<div class="row" style="margin-top:10px"><span class="badge">Fase TARUHAN rahasia (${r7.betted.length}/${TKEYS.filter(t=>S.teams[t].memberCount>0).length} sudah)</span>
+    <button class="btn btn-primary" onclick="socket.emit('t:r7start')">⏱️ Paksa Mulai Sesi Jawab (15 detik)</button></div>`;
+  if(r7.phase==='answer')left+=`<div class="badge" style="margin-top:10px;border-color:#dc2626;color:#dc2626">⏱️ Menulis jawaban: <span class="countdown" data-dl="${r7.deadline}"></span></div>`;
+  if(S.teacher.finalKey&&r7.phase==='judge')left+=`<div style="margin-top:10px;padding:10px;border-radius:10px;background:#f0fdf4;border:1px solid #86efac">
+    <b class="small">🗝️ KUNCI (nilai berdasarkan kesesuaian makna):</b><p class="small" style="margin-top:4px">${S.teacher.finalKey.key}</p>
+    <p class="small">Kata kunci: ${S.teacher.finalKey.keywords.join(' · ')}</p></div>`;
+  left+='</div>';
+  const right=TKEYS.map(t=>{
+    const bet=r7.bets[t],ans=S.teacher.r7answers[t];
+    return `<div class="card teamcard t-${t}">
+      <div class="row"><b style="color:var(--tc)">${TEAMS[t].icon} ${TEAMS[t].name}</b>
+      <span class="badge">Skor ${S.scores[t]}</span>${bet!==undefined?`<span class="badge" style="border-color:gold;color:#b45309">🎲 Taruhan ${bet}% (±${Math.floor(S.scores[t]*bet/100)})</span>`:'<span class="badge">belum taruhan</span>'}</div>
+      ${ans?`<div class="sub-bubble">✍️ “${ans}”</div>`:'<span class="small">Belum menjawab.</span>'}
+      ${r7.phase==='judge'?`<div class="row">
+        ${r7.judged[t]===undefined?`<button class="btn btn-success grow" onclick="socket.emit('t:r7judge',{team:'${t}',ok:true})">✔ Maknanya Benar</button>
+        <button class="btn btn-danger grow" onclick="socket.emit('t:r7judge',{team:'${t}',ok:false})">✖ Salah</button>`
+        :`<span class="badge ${r7.judged[t]?'':'bad'}">${r7.judged[t]?'✔ Dinilai BENAR':'✖ Dinilai SALAH'}</span>`}</div>`:''}
+    </div>`;}).join('');
+  const allJudged=TKEYS.filter(t=>S.teams[t].memberCount>0).every(t=>r7.judged[t]!==undefined);
+  if(r7.phase==='judge')left+=`<div class="card" style="padding:14px"><button class="btn btn-primary" style="width:100%" ${allJudged?'':'disabled'} onclick="socket.emit('t:r7reveal')">🎬 TAMPILKAN FINAL REVEAL</button>
+    ${allJudged?'':'<p class="small" style="margin-top:6px">Nilai dulu semua jawaban tim yang aktif.</p>'}</div>`;
+  if(r7.phase==='reveal')left+=`<div class="card" style="padding:14px"><button class="btn btn-primary" style="width:100%" onclick="socket.emit('t:podium')">🏆 Naik ke Podium Juara</button></div>`;
+  return `<div class="t-grid"><div class="t-left">${left}</div><div class="t-right">${right}</div></div>`;
+}
+function rekapHTML(){
+  if(!S.teacher)return '<div class="card" style="padding:16px">Memuat…</div>';
+  const rows=S.teacher.students.map(s=>`<tr><td>${s.name}${s.captain?' 👑':''}</td><td>${s.absen}</td><td>${s.kelas}</td>
+    <td class="t-${s.team}" style="color:var(--tc);font-weight:700">${TEAMS[s.team]?TEAMS[s.team].icon:''} ${TEAMS[s.team]?TEAMS[s.team].name:'-'}</td>
+    <td>${s.contrib}</td><td><b>${s.ind}</b></td></tr>`).join('');
+  return `<div class="card" style="padding:16px"><div class="row"><b>📊 Rekap Skor Individu (tersimpan di backend)</b>
+    <span class="grow"></span><button class="btn" style="padding:6px 12px" onclick="downloadRekap()">⬇ CSV</button></div>
+    <div style="overflow:auto;margin-top:10px"><table class="rekap"><thead><tr><th>Nama</th><th>Absen</th><th>Kelas</th><th>Tim</th><th>Jawaban benar</th><th>Skor individu</th></tr></thead><tbody>${rows||'<tr><td colspan="6">Belum ada siswa bergabung.</td></tr>'}</tbody></table></div></div>`;
+}
+function rekapModal(){openModal('<h3>📊 Rekap Nilai</h3>'+rekapHTML()+'<button class="btn" onclick="closeModal()">Tutup</button>');}
+function downloadRekap(){
+  const rows=[['Nama','Absen','Kelas','Tim','JawabanBenar','SkorIndividu'],...S.teacher.students.map(s=>[s.name,s.absen,s.kelas,TEAMS[s.team]?TEAMS[s.team].name:'-',s.contrib,s.ind])];
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='rekap-amerta-lima.csv';a.click();
+}
+/* ================= TICKER COUNTDOWN ================= */
+setInterval(()=>{
+  $$('.countdown[data-dl]').forEach(el=>{
+    const ms=el.dataset.dl-Date.now();
+    el.textContent=ms>0?Math.ceil(ms/1000)+'s':'0s';
+  });
+},200);
+show('v-title');
+</script>
+</body>
+</html>
