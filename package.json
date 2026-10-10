@@ -1,0 +1,8 @@
+{
+  "name": "amerta-lima",
+  "version": "1.0.0",
+  "description": "Game kuis Bhinneka Tunggal Ika - PPKn Kelas X",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.19.2", "socket.io": "^4.7.5" }
+}
